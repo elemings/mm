@@ -1,3 +1,202 @@
+# ===========================================================================
+#     https://www.gnu.org/software/autoconf-archive/ax_check_define.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AC_CHECK_DEFINE([symbol], [ACTION-IF-FOUND], [ACTION-IF-NOT])
+#   AX_CHECK_DEFINE([includes],[symbol], [ACTION-IF-FOUND], [ACTION-IF-NOT])
+#
+# DESCRIPTION
+#
+#   Complements AC_CHECK_FUNC but it does not check for a function but for a
+#   define to exist. Consider a usage like:
+#
+#    AC_CHECK_DEFINE(__STRICT_ANSI__, CFLAGS="$CFLAGS -D_XOPEN_SOURCE=500")
+#
+# LICENSE
+#
+#   Copyright (c) 2008 Guido U. Draheim <guidod@gmx.de>
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved.  This file is offered as-is, without any
+#   warranty.
+
+#serial 11
+
+AU_ALIAS([AC_CHECK_DEFINED], [AC_CHECK_DEFINE])
+AC_DEFUN([AC_CHECK_DEFINE],[
+AS_VAR_PUSHDEF([ac_var],[ac_cv_defined_$1])dnl
+AC_CACHE_CHECK([for $1 defined], ac_var,
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[
+  #ifdef $1
+  int ok;
+  (void)ok;
+  #else
+  choke me
+  #endif
+]])],[AS_VAR_SET(ac_var, yes)],[AS_VAR_SET(ac_var, no)]))
+AS_IF([test AS_VAR_GET(ac_var) != "no"], [$2], [$3])dnl
+AS_VAR_POPDEF([ac_var])dnl
+])
+
+AU_ALIAS([AX_CHECK_DEFINED], [AX_CHECK_DEFINE])
+AC_DEFUN([AX_CHECK_DEFINE],[
+AS_VAR_PUSHDEF([ac_var],[ac_cv_defined_$2_$1])dnl
+AC_CACHE_CHECK([for $2 defined in $1], ac_var,
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <$1>]], [[
+  #ifdef $2
+  int ok;
+  (void)ok;
+  #else
+  choke me
+  #endif
+]])],[AS_VAR_SET(ac_var, yes)],[AS_VAR_SET(ac_var, no)]))
+AS_IF([test AS_VAR_GET(ac_var) != "no"], [$3], [$4])dnl
+AS_VAR_POPDEF([ac_var])dnl
+])
+
+AC_DEFUN([AX_CHECK_FUNC],
+[AS_VAR_PUSHDEF([ac_var], [ac_cv_func_$2])dnl
+AC_CACHE_CHECK([for $2], ac_var,
+dnl AC_LANG_FUNC_LINK_TRY
+[AC_LINK_IFELSE([AC_LANG_PROGRAM([$1
+                #undef $2
+                char $2 ();],[
+                char (*f) () = $2;
+                return f != $2; ])],
+                [AS_VAR_SET(ac_var, yes)],
+                [AS_VAR_SET(ac_var, no)])])
+AS_IF([test AS_VAR_GET(ac_var) = yes], [$3], [$4])dnl
+AS_VAR_POPDEF([ac_var])dnl
+])# AC_CHECK_FUNC
+
+# ===========================================================================
+#  https://www.gnu.org/software/autoconf-archive/ax_check_enable_debug.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_CHECK_ENABLE_DEBUG([enable by default=yes/info/profile/no], [ENABLE DEBUG VARIABLES ...], [DISABLE DEBUG VARIABLES NDEBUG ...], [IS-RELEASE])
+#
+# DESCRIPTION
+#
+#   Check for the presence of an --enable-debug option to configure, with
+#   the specified default value used when the option is not present.  Return
+#   the value in the variable $ax_enable_debug.
+#
+#   Specifying 'yes' adds '-g -O0' to the compilation flags for all
+#   languages. Specifying 'info' adds '-g' to the compilation flags.
+#   Specifying 'profile' adds '-g -pg' to the compilation flags and '-pg' to
+#   the linking flags. Otherwise, nothing is added.
+#
+#   Define the variables listed in the second argument if debug is enabled,
+#   defaulting to no variables.  Defines the variables listed in the third
+#   argument if debug is disabled, defaulting to NDEBUG.  All lists of
+#   variables should be space-separated.
+#
+#   If debug is not enabled, ensure AC_PROG_* will not add debugging flags.
+#   Should be invoked prior to any AC_PROG_* compiler checks.
+#
+#   IS-RELEASE can be used to change the default to 'no' when making a
+#   release.  Set IS-RELEASE to 'yes' or 'no' as appropriate. By default, it
+#   uses the value of $ax_is_release, so if you are using the AX_IS_RELEASE
+#   macro, there is no need to pass this parameter.
+#
+#     AX_IS_RELEASE([git-directory])
+#     AX_CHECK_ENABLE_DEBUG()
+#
+# LICENSE
+#
+#   Copyright (c) 2011 Rhys Ulerich <rhys.ulerich@gmail.com>
+#   Copyright (c) 2014, 2015 Philip Withnall <philip@tecnocode.co.uk>
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved.
+
+##serial 9
+
+AC_DEFUN([AX_CHECK_ENABLE_DEBUG],[
+    AC_BEFORE([$0],[AC_PROG_CC])dnl
+    AC_BEFORE([$0],[AC_PROG_CXX])dnl
+    AC_BEFORE([$0],[AC_PROG_F77])dnl
+    AC_BEFORE([$0],[AC_PROG_FC])dnl
+
+    AC_MSG_CHECKING(whether to enable debugging)
+
+    ax_enable_debug_default=m4_tolower(m4_normalize(ifelse([$1],,[no],[$1])))
+    ax_enable_debug_is_release=m4_tolower(m4_normalize(ifelse([$4],,
+                                                              [$ax_is_release],
+                                                              [$4])))
+
+    # If this is a release, override the default.
+    AS_IF([test "$ax_enable_debug_is_release" = "yes"],
+      [ax_enable_debug_default="no"])
+
+    m4_define(ax_enable_debug_vars,[m4_normalize(ifelse([$2],,,[$2]))])
+    m4_define(ax_disable_debug_vars,[m4_normalize(ifelse([$3],,[NDEBUG],[$3]))])
+
+    AC_ARG_ENABLE(debug,
+        [AS_HELP_STRING([--enable-debug=]@<:@yes/info/profile/no@:>@,[compile with debugging])],
+        [],enable_debug=$ax_enable_debug_default)
+
+    # empty mean debug yes
+    AS_IF([test "x$enable_debug" = "x"],
+      [enable_debug="yes"])
+
+    # case of debug
+    AS_CASE([$enable_debug],
+      [yes],[
+        AC_MSG_RESULT(yes)
+        CFLAGS="${CFLAGS} -g -O0"
+        CXXFLAGS="${CXXFLAGS} -g -O0"
+        FFLAGS="${FFLAGS} -g -O0"
+        FCFLAGS="${FCFLAGS} -g -O0"
+        OBJCFLAGS="${OBJCFLAGS} -g -O0"
+      ],
+      [info],[
+        AC_MSG_RESULT(info)
+        CFLAGS="${CFLAGS} -g"
+        CXXFLAGS="${CXXFLAGS} -g"
+        FFLAGS="${FFLAGS} -g"
+        FCFLAGS="${FCFLAGS} -g"
+        OBJCFLAGS="${OBJCFLAGS} -g"
+      ],
+      [profile],[
+        AC_MSG_RESULT(profile)
+        CFLAGS="${CFLAGS} -g -pg"
+        CXXFLAGS="${CXXFLAGS} -g -pg"
+        FFLAGS="${FFLAGS} -g -pg"
+        FCFLAGS="${FCFLAGS} -g -pg"
+        OBJCFLAGS="${OBJCFLAGS} -g -pg"
+        LDFLAGS="${LDFLAGS} -pg"
+      ],
+      [
+        AC_MSG_RESULT(no)
+        dnl Ensure AC_PROG_CC/CXX/F77/FC/OBJC will not enable debug flags
+        dnl by setting any unset environment flag variables
+        AS_IF([test "x${CFLAGS+set}" != "xset"],
+          [CFLAGS=""])
+        AS_IF([test "x${CXXFLAGS+set}" != "xset"],
+          [CXXFLAGS=""])
+        AS_IF([test "x${FFLAGS+set}" != "xset"],
+          [FFLAGS=""])
+        AS_IF([test "x${FCFLAGS+set}" != "xset"],
+          [FCFLAGS=""])
+        AS_IF([test "x${OBJCFLAGS+set}" != "xset"],
+          [OBJCFLAGS=""])
+      ])
+
+    dnl Define various variables if debugging is disabled.
+    dnl assert.h is a NOP if NDEBUG is defined, so define it by default.
+    AS_IF([test "x$enable_debug" = "xyes"],
+      [m4_map_args_w(ax_enable_debug_vars, [AC_DEFINE(], [,[1],[Define if debugging is enabled])])],
+      [m4_map_args_w(ax_disable_debug_vars, [AC_DEFINE(], [,[1],[Define if debugging is disabled])])])
+    ax_enable_debug=$enable_debug
+])
+
 ## ====================================================================
 ## Copyright (c) 1999-2006 Ralf S. Engelschall <rse@engelschall.com>
 ## Copyright (c) 1999-2006 The OSSP Project <http://www.ossp.org/>
