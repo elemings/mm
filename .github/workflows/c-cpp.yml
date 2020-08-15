@@ -23,3 +23,8 @@ jobs:
       run: make check
     - name: make distcheck
       run: make distcheck
+    - name: Upload distribution
+      uses: actions/upload-artifact@v2
+      with:
+        name: dist
+        path: mm-*.tar.gz
