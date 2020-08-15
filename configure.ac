@@ -48,18 +48,24 @@ dnl #
 
 dnl #   autoconf initialization
 AC_PREREQ(2.53)dnl
-AC_INIT(README)
+AC_INIT([mm],[1.5.0])
 AC_PREFIX_DEFAULT(/usr/local)
 
+AC_SUBST([AUX_DIR], [build-aux])
+AC_CONFIG_AUX_DIR([build-aux])
+
+AC_CONFIG_MACRO_DIR([m4])
+
+AM_INIT_AUTOMAKE
+AM_MAINTAINER_MODE
+
 dnl #   shtool bootstrap
-SHTOOL="\$(TOP)/shtool"
-AC_SUBST(SHTOOL)
-ac_shtool="./shtool"
+ac_shtool="${ac_aux_dir}/shtool"
 T_MD=`$ac_shtool echo -n -e %B`
 T_ME=`$ac_shtool echo -n -e %b`
-PLATFORM=`${CONFIG_SHELL-/bin/sh} ./config.guess`
-PLATFORM=`${CONFIG_SHELL-/bin/sh} ./config.sub $PLATFORM`
-MM_VERSION_STR="`$ac_shtool version -l c -d long mm_vers.c`"
+PLATFORM=`${CONFIG_SHELL-/bin/sh} ${ac_aux_dir}/config.guess`
+PLATFORM=`${CONFIG_SHELL-/bin/sh} ${ac_aux_dir}/config.sub $PLATFORM`
+MM_VERSION_STR="`$ac_shtool version -l c -d long ${srcdir}/mm_vers.c`"
 AC_SUBST(MM_VERSION_STR)
 
 dnl #   friendly header ;-)
@@ -73,13 +79,13 @@ dnl #   determine build tools and parameters
 dnl #
 
 AC_CONFIGURE_PART(Build Tools)
+AX_CHECK_ENABLE_DEBUG([no], [MM_DEBUG])
 AC_PROG_CC
 AC_PROG_CPP
-AC_CHECK_DEBUGGING
-AC_SET_MAKE
+AC_PROG_MAKE_SET
 
-sinclude(libtool.m4)
 AC_PROG_LIBTOOL
+AC_PROG_SHTOOL
 
 dnl #   support for some special platform/compiler options
 case "$PLATFORM:$CC" in
@@ -94,11 +100,11 @@ AC_CONFIGURE_PART(Platform Environment)
 
 AC_HAVE_HEADERS(stdio.h stdlib.h string.h dnl
                 errno.h limits.h unistd.h fcntl.h dnl
-                sys/stat.h sys/types.h)
+                sys/param.h sys/stat.h sys/types.h)
 AC_BEGIN_DECISION([mandatory system headers])
 AC_IFALLYES(header:stdio.h header:stdlib.h header:string.h dnl
             header:errno.h header:limits.h header:unistd.h header:fcntl.h dnl
-            header:sys/stat.h header:sys/types.h,
+            header:sys/param.h header:sys/stat.h header:sys/types.h,
             AC_DECIDE(fine, [all fine]))
 AC_END_DECISION
 
@@ -108,7 +114,6 @@ AC_CHECK_DEFINE(_POSIX_PATH_MAX, limits.h)
 AC_CHECK_DEFINE(PATH_MAX, limits.h)
 AC_CHECK_DEFINE(_POSIX_CHILD_MAX, limits.h)
 AC_CHECK_DEFINE(CHILD_MAX, limits.h)
-AC_HAVE_HEADERS(sys/param.h)
 AC_CHECK_DEFINE(MAXPATHLEN, sys/param.h)
 
 dnl #   some special defines for brain dead platforms
@@ -151,7 +156,7 @@ AC_CONFIGURE_PART(Shared Memory Implementation)
 AC_HAVE_HEADERS(sys/mman.h)
 AC_CHECK_DEFINE(MAP_ANON, sys/mman.h)
 AC_HAVE_FUNCS(mmap munmap shm_open shm_unlink)
-AC_TEST_FILE(/dev/zero)
+AC_CHECK_FILE(/dev/zero)
 AC_HAVE_HEADERS(sys/ipc.h sys/shm.h sys/file.h)
 AC_HAVE_FUNCS(shmget shmat shmdt shmctl)
 AC_HAVE_HEADERS(kernel/OS.h)
@@ -284,7 +289,6 @@ dnl #
 AC_CONFIGURE_PART(Output Substitution)
 
 AC_CONFIG_HEADERS(config.h)
-AC_CONFIG_FILES([Makefile mm-config])
-AC_CONFIG_COMMANDS([adjustment], [chmod a+x mm-config])
+AC_CONFIG_FILES([Makefile mm.pc])
 AC_OUTPUT
 
