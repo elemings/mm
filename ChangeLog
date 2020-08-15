@@ -9,6 +9,11 @@
  ChangeLog
  =========
 
+ Changes between 1.5.0 and 1.5.1 (15-Aug-2020 to 15-Aug-2020)
+
+  *) Add GitHub Action for "make distcheck" CI.
+     [Eric Lemings <eric@lemings.com>]
+
  Changes between 1.4.2 and 1.5.0 (15-Aug-2006 to 15-Aug-2020)
 
   *) Upgraded build environment to GNU autoconf 2.69,

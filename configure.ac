@@ -48,7 +48,7 @@ dnl #
 
 dnl #   autoconf initialization
 AC_PREREQ(2.53)dnl
-AC_INIT([mm],[1.5.0])
+AC_INIT([mm],[1.5.1])
 AC_PREFIX_DEFAULT(/usr/local)
 
 AC_SUBST([AUX_DIR], [build-aux])
