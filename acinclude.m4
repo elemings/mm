@@ -116,7 +116,7 @@ AS_VAR_POPDEF([ac_var])dnl
 #   permitted in any medium without royalty provided the copyright notice
 #   and this notice are preserved.
 
-#serial 9
+##serial 9
 
 AC_DEFUN([AX_CHECK_ENABLE_DEBUG],[
     AC_BEFORE([$0],[AC_PROG_CC])dnl
