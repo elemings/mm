@@ -9,6 +9,16 @@
  ChangeLog
  =========
 
+ Changes between 1.4.2 and 1.5.0 (15-Aug-2006 to 15-Aug-2020)
+
+  *) Upgraded build environment to GNU autoconf 2.69,
+     GNU automake 1.13.4, GNU libtool 2.4.2, and
+     GNU shtool 2.0.8.
+     [Eric Lemings <eric@lemings.com>]
+
+  *) Replaced mm-config files with pkg-config mm.pc file.
+     [Eric Lemings <eric@lemings.com>]
+
  Changes between 1.4.1 and 1.4.2 (10-Aug-2006 to 15-Aug-2006)
 
   *) Remove a trailing whitespace in mm.pod which

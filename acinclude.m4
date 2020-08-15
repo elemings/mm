@@ -38,59 +38,16 @@
 ## OF THE POSSIBILITY OF SUCH DAMAGE.
 ## ====================================================================
 
-define(AC_CHECK_DEBUGGING,[dnl
-AC_MSG_CHECKING(for compilation debug mode)
-AC_ARG_ENABLE(debug,dnl
-[  --enable-debug          build for debugging (default=no)],
-[dnl
-if test ".$ac_cv_prog_gcc" = ".yes"; then
-    case "$CFLAGS" in
-        *-O2* ) ;;
-            * ) CFLAGS="$CFLAGS -O2" ;;
-    esac
-    case "$CFLAGS" in
-        *-g* ) ;;
-           * ) CFLAGS="$CFLAGS -g" ;;
-    esac
-    CFLAGS="$CFLAGS -Wall -Wshadow -Wpointer-arith -Wcast-align"
-    CFLAGS="$CFLAGS -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline"
-else
-    case "$CFLAGS" in
-        *-g* ) ;;
-           * ) CFLAGS="$CFLAGS -g" ;;
-    esac
-fi
-msg="enabled"
-AC_DEFINE(MM_DEBUG, 1, [define to enable debugging])
-],[
-case "$CFLAGS" in
-    *-g* ) CFLAGS=`echo "$CFLAGS" |\
-                   sed -e 's/ -g / /g' -e 's/ -g$//' -e 's/^-g //g' -e 's/^-g$//'` ;;
-esac
-msg=disabled
-])dnl
-AC_MSG_RESULT([$msg])
-])
-
 define(AC_CONFIGURE_PART,[dnl
 AC_MSG_RESULT()
 AC_MSG_RESULT(${T_MD}$1:${T_ME})
 ])dnl
 
-define(AC_CHECK_DEFINE,[dnl
-  AC_CACHE_CHECK(for $1 in $2, ac_cv_define_$1,
-    AC_EGREP_CPP([YES_IS_DEFINED], [
-#include <$2>
-#ifdef $1
-YES_IS_DEFINED
-#endif
-    ], ac_cv_define_$1=yes, ac_cv_define_$1=no)
-  )
-  if test "$ac_cv_define_$1" = "yes" ; then
-    AC_DEFINE(HAVE_$1, 1, [define to 1 if you have the $1 define])
-  fi
+undefine([AC_CHECK_DEFINE])
+define([AC_CHECK_DEFINE],[dnl
+  AX_CHECK_DEFINE([$2], [$1],
+    [AC_DEFINE(HAVE_$1, 1, [define to 1 if you have the $1 define])])
 ])dnl
-AC_DEFINE(HAVE_$1)
 
 define(AC_IFALLYES,[dnl
 ac_rc=yes
@@ -161,58 +118,6 @@ else
     AC_MSG_RESULT([decision on $ac_decision_item... $ac_decision_msg])
 fi
 ])dnl
-
-AC_DEFUN(AC_TEST_FILE,
-[AC_REQUIRE([AC_PROG_CC])
-ac_safe=`echo "$1" | sed 'y%./+-%__p_%'`
-AC_MSG_CHECKING([for $1])
-AC_CACHE_VAL(ac_cv_file_$ac_safe, [
-  if test -r $1; then
-    eval "ac_cv_file_$ac_safe=yes"
-  else
-    eval "ac_cv_file_$ac_safe=no"
-  fi
-])dnl
-if eval "test \"`echo '$ac_cv_file_'$ac_safe`\" = yes"; then
-  AC_MSG_RESULT(yes)
-  ifelse([$2], , :, [$2])
-else
-  AC_MSG_RESULT(no)
-ifelse([$3], , , [$3])
-fi
-])
-
-AC_DEFUN(AC_PROG_NM,
-[AC_MSG_CHECKING([for BSD-compatible nm])
-AC_CACHE_VAL(ac_cv_path_NM,
-[if test -n "$NM"; then
-  # Let the user override the test.
-  ac_cv_path_NM="$NM"
-else
-  IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
-  for ac_dir in /usr/ucb /usr/ccs/bin $PATH /bin; do
-    test -z "$ac_dir" && ac_dir=.
-    if test -f $ac_dir/nm; then
-      # Check to see if the nm accepts a BSD-compat flag.
-      # Adding the `sed 1q' prevents false positives on HP-UX, which says:
-      #   nm: unknown option "B" ignored
-      if ($ac_dir/nm -B /dev/null 2>&1 | sed '1q'; exit 0) | egrep /dev/null >/dev/null; then
-        ac_cv_path_NM="$ac_dir/nm -B"
-      elif ($ac_dir/nm -p /dev/null 2>&1 | sed '1q'; exit 0) | egrep /dev/null >/dev/null; then
-        ac_cv_path_NM="$ac_dir/nm -p"
-      else
-        ac_cv_path_NM="$ac_dir/nm"
-      fi
-      break
-    fi
-  done
-  IFS="$ac_save_ifs"
-  test -z "$ac_cv_path_NM" && ac_cv_path_NM=nm
-fi])
-NM="$ac_cv_path_NM"
-AC_MSG_RESULT([$NM])
-AC_SUBST(NM)
-])
 
 define(AC_CHECK_MAXSEGSIZE,[dnl
 AC_MSG_CHECKING(for shared memory maximum segment size)

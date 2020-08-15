@@ -7,7 +7,7 @@
   OSSP mm - Shared Memory Allocation
   Copyright (c) 1999-2006 Ralf S. Engelschall <rse@engelschall.com>
   Copyright (c) 1999-2006 The OSSP Project <http://www.ossp.org/>
-  Version 1.4.2 (15-Aug-2006)
+  Version 1.5.0 (15-Aug-2020)
 
   OSSP mm is a 2-layer abstraction library which simplifies the usage of
   shared memory between forked (and this way strongly related) processes
